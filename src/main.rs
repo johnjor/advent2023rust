@@ -1,13 +1,14 @@
 mod aoc2022;
+mod aoc2023;
 
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use aoc2022::aoc2022::day1part1;
+use aoc2023::aoc2023::day1part1;
 
 
 fn main() {
-    if let Ok(lines) = read_lines("../advent2022/day1/official.txt") {
+    if let Ok(lines) = read_lines("inputs/day1/input.txt") {
         day1part1(lines);
     }
 }
