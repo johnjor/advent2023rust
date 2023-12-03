@@ -81,12 +81,47 @@ pub mod aoc2023 {
     }
 
     // Day 2
-    pub fn day2part1(lines: Lines<BufReader<File>>) {
-        let game_id_re = Regex::new(r"Game (\d+):").unwrap();
-
+    struct MaxRGB {
+        red: i32,
+        green: i32,
+        blue: i32
+    }
+    fn day2common(slice: &str) -> MaxRGB {
         let green_re = Regex::new(r"(\d+) green").unwrap();
         let blue_re = Regex::new(r"(\d+) blue").unwrap();
         let red_re = Regex::new(r"(\d+) red").unwrap();
+
+        let mut rounds = slice.split(";");
+        let max_greens = rounds.clone().map(|part| {
+            if let Some(caps) = green_re.captures(part) {
+                return (&caps[1]).parse::<i32>().unwrap_or(0);
+            } else {
+                return 0;
+            };
+        }).max().unwrap_or(0);
+
+        let max_blues = rounds.clone().map(|part| {
+            if let Some(caps) = blue_re.captures(part) {
+                return (&caps[1]).parse::<i32>().unwrap_or(0);
+            } else {
+                return 0;
+            };
+        }).max().unwrap_or(0);
+
+        let max_reds = rounds.clone().map(|part| {
+            if let Some(caps) = red_re.captures(part) {
+                return (&caps[1]).parse::<i32>().unwrap_or(0);
+            } else {
+                return 0;
+            };
+        }).max().unwrap_or(0);
+
+        MaxRGB{ red: max_reds, green: max_greens, blue: max_blues }
+
+    }
+
+    pub fn day2part1(lines: Lines<BufReader<File>>) {
+        let game_id_re = Regex::new(r"Game (\d+):").unwrap();
 
         let red_threshold= 12;
         let green_threshold= 13;
@@ -105,34 +140,9 @@ pub mod aoc2023 {
                     continue;
                 };
 
-                let mut rounds = line.split(";");
-                let max_greens = rounds.clone().map(|part| {
-                    if let Some(caps) = green_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
+                let rgb = day2common(&line);
 
-                let max_blues = rounds.clone().map(|part| {
-                    if let Some(caps) = blue_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
-
-                let max_reds = rounds.clone().map(|part| {
-                    if let Some(caps) = red_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
-
-                // println!("Max: green={}, blue={}, red={}", max_greens, max_blues, max_reds)
-
-                if max_reds <= red_threshold && max_blues <= blue_threshold && max_greens <= green_threshold {
+                if rgb.red <= red_threshold && rgb.blue <= blue_threshold && rgb.green <= green_threshold {
                     sum += game_id;
                 }
             }
@@ -142,57 +152,12 @@ pub mod aoc2023 {
     }
 
     pub fn day2part2(lines: Lines<BufReader<File>>) {
-        let game_id_re = Regex::new(r"Game (\d+):").unwrap();
-
-        let green_re = Regex::new(r"(\d+) green").unwrap();
-        let blue_re = Regex::new(r"(\d+) blue").unwrap();
-        let red_re = Regex::new(r"(\d+) red").unwrap();
-
-        let red_threshold= 12;
-        let green_threshold= 13;
-        let blue_threshold= 14;
-
         let mut sum = 0;
 
         for line_result in lines {
             if let Ok(line) = line_result {
-                let mut game_id ;
-                if let Some(caps) = game_id_re.captures(line.as_str()) {
-                    game_id = (&caps[1]).parse::<i32>().unwrap();
-                    // println!("Game ID = {}", game_id)
-                } else {
-                    println!("Failed to capture Game ID on line: {}", line);
-                    continue;
-                };
-
-                let mut rounds = line.split(";");
-                let max_greens = rounds.clone().map(|part| {
-                    if let Some(caps) = green_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
-
-                let max_blues = rounds.clone().map(|part| {
-                    if let Some(caps) = blue_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
-
-                let max_reds = rounds.clone().map(|part| {
-                    if let Some(caps) = red_re.captures(part) {
-                        return (&caps[1]).parse::<i32>().unwrap_or(0);
-                    } else {
-                        return 0;
-                    };
-                }).max().unwrap_or(0);
-
-                // println!("Max: green={}, blue={}, red={}", max_greens, max_blues, max_reds)
-
-                let power = max_reds * max_greens * max_blues;
+                let rgb = day2common(&line);
+                let power = rgb.red * rgb.blue * rgb.green;
                 sum += power;
             }
         }
