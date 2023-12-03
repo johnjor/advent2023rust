@@ -86,38 +86,28 @@ pub mod aoc2023 {
         green: i32,
         blue: i32
     }
+    fn get_max_for_color(rounds: Vec<&str>, re: Regex) -> i32 {
+        rounds.iter().map(|part| {
+            if let Some(caps) = re.captures(part) {
+                (&caps[1]).parse::<i32>().unwrap_or(0)
+            } else {
+                0
+            }
+        }).max().unwrap_or(0)
+    }
+
     fn day2common(slice: &str) -> MaxRGB {
         let green_re = Regex::new(r"(\d+) green").unwrap();
         let blue_re = Regex::new(r"(\d+) blue").unwrap();
         let red_re = Regex::new(r"(\d+) red").unwrap();
 
-        let mut rounds = slice.split(";");
-        let max_greens = rounds.clone().map(|part| {
-            if let Some(caps) = green_re.captures(part) {
-                return (&caps[1]).parse::<i32>().unwrap_or(0);
-            } else {
-                return 0;
-            };
-        }).max().unwrap_or(0);
+        let mut rounds: Vec<_> = slice.split(";").collect();
 
-        let max_blues = rounds.clone().map(|part| {
-            if let Some(caps) = blue_re.captures(part) {
-                return (&caps[1]).parse::<i32>().unwrap_or(0);
-            } else {
-                return 0;
-            };
-        }).max().unwrap_or(0);
-
-        let max_reds = rounds.clone().map(|part| {
-            if let Some(caps) = red_re.captures(part) {
-                return (&caps[1]).parse::<i32>().unwrap_or(0);
-            } else {
-                return 0;
-            };
-        }).max().unwrap_or(0);
+        let max_greens = get_max_for_color(rounds.clone(), green_re);
+        let max_blues = get_max_for_color(rounds.clone(), blue_re);
+        let max_reds = get_max_for_color(rounds.clone(), red_re);
 
         MaxRGB{ red: max_reds, green: max_greens, blue: max_blues }
-
     }
 
     pub fn day2part1(lines: Lines<BufReader<File>>) {
@@ -164,4 +154,6 @@ pub mod aoc2023 {
 
         println!("{}", sum);
     }
+
+    // Day 3
 }
