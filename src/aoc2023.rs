@@ -4,6 +4,7 @@ pub mod aoc2023 {
     use regex::Regex;
     use std::collections::{HashMap, HashSet};
     use std::fmt;
+    use std::hash::Hash;
 
     // Day 1
     pub fn day1part1(lines: Lines<BufReader<File>>) {
@@ -343,22 +344,24 @@ pub mod aoc2023 {
     }
 
     // Day 4
+    fn day4_parse_cards(line: String) -> (Vec<i32>, HashSet<i32>) {
+        todo!()
+    }
+
     pub fn day4part1(lines: Lines<BufReader<File>>) {
         let mut sum = 0;
 
         for line_result in lines {
             if let Ok(line) = line_result {
                 let splits: Vec<&str> = line.as_str().split('|').collect();
-                let winning_numbers: Vec<i32> = splits[0]
+                let winning_numbers: HashSet<i32> = HashSet::from_iter(splits[0]
                     .split(':').nth(1).unwrap()
                     .split_ascii_whitespace().into_iter().map(|x| {
                         x.parse::<i32>().unwrap()
-                    }).collect();
+                    }));
 
-                let my_numbers: HashSet<i32> = HashSet::from_iter(
-                    splits[1].split_ascii_whitespace().into_iter()
-                        .map(|x| { x.parse::<i32>().unwrap() })
-                );
+                let my_numbers: Vec<i32> = splits[1].split_ascii_whitespace().into_iter()
+                        .map(|x| { x.parse::<i32>().unwrap() }).collect();
 
                 // println!("{:?} - {:?}", winning_numbers, my_numbers);
 
