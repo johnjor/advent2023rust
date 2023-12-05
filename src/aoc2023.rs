@@ -2,7 +2,7 @@ pub mod aoc2023 {
     use std::fs::File;
     use std::io::{BufReader, Lines};
     use regex::Regex;
-    use std::collections::HashMap;
+    use std::collections::{HashMap, HashSet};
     use std::fmt;
 
     // Day 1
@@ -339,6 +339,42 @@ pub mod aoc2023 {
                 sum += symbol.part_numbers[0].number * symbol.part_numbers[1].number
             }
         }
+        println!("{}", sum);
+    }
+
+    // Day 4
+    pub fn day4part1(lines: Lines<BufReader<File>>) {
+        let mut sum = 0;
+
+        for line_result in lines {
+            if let Ok(line) = line_result {
+                let splits: Vec<&str> = line.as_str().split('|').collect();
+                let winning_numbers: Vec<i32> = splits[0]
+                    .split(':').nth(1).unwrap()
+                    .split_ascii_whitespace().into_iter().map(|x| {
+                        x.parse::<i32>().unwrap()
+                    }).collect();
+
+                let my_numbers: HashSet<i32> = HashSet::from_iter(
+                    splits[1].split_ascii_whitespace().into_iter()
+                        .map(|x| { x.parse::<i32>().unwrap() })
+                );
+
+                // println!("{:?} - {:?}", winning_numbers, my_numbers);
+
+                let mut row_total = 0;
+                for i in my_numbers {
+                    if winning_numbers.contains(&i) {
+                        match row_total {
+                            0 => row_total += 1,
+                            _ => row_total *= 2
+                        };
+                    };
+                };
+                sum += row_total;
+            }
+        }
+
         println!("{}", sum);
     }
 }

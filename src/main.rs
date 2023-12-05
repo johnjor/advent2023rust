@@ -8,8 +8,8 @@ use aoc2023::aoc2023::*;
 
 
 fn main() {
-    if let Ok(lines) = read_lines("inputs/day3/input.txt") {
-        day3part2(lines);
+    if let Ok(lines) = read_lines("inputs/day4/input.txt") {
+        day4part1(lines);
     }
 }
 
