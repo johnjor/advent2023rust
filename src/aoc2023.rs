@@ -737,4 +737,48 @@ pub mod aoc2023 {
             }
         }
     }
+
+    pub fn day6part1(mut lines: Lines<BufReader<File>>) {
+        let time_line = lines.next().unwrap().unwrap();
+        let times: Vec<usize> = time_line.as_str()
+            .split(':').nth(1).unwrap().trim().split(' ')
+            .filter_map(|x| { x.parse::<usize>().ok() })
+            .collect();
+
+        let distance_line = lines.next().unwrap().unwrap();
+        let distances: Vec<usize> = distance_line.as_str()
+            .split(':').nth(1).unwrap().trim().split(' ')
+            .filter_map(|x| { x.parse::<usize>().ok() })
+            .collect();
+
+        // println!("{:?}", times);
+        // println!("{:?}", distances);
+
+        let mut result: usize = 0;
+
+        for (time, dist) in times.into_iter().zip(distances.into_iter()) {
+            let start = (time as f32 / 2f32).floor() as usize;
+            let mut i: usize = 0;
+            let mut d: usize = (time - (start - i)) * (start - i);
+            let mut count: usize = 0;
+
+            while d > dist {
+                count += 2;
+                i += 1;
+                d = (time - (start - i)) * (start - i);
+            }
+
+            if time % 2 == 0 {
+                count -= 1;
+            }
+
+            // println!("time={}, dist={}, count={}", time, dist, count);
+            if result == 0 {
+                result = count;
+            } else {
+                result *= count;
+            }
+        }
+        println!("{}", result);
+    }
 }
