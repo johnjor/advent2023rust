@@ -853,13 +853,23 @@ pub mod aoc2023 {
                 acc
             });
 
-            let mut card_counts: Vec<usize> = card_counts_map.into_values().collect();
+            let j_count = *(card_counts_map.get(&'0').unwrap_or(&0));
+
+            // Part 1
+            //let mut card_counts: Vec<usize> = card_counts_map.into_values().collect();
+
+            // Part 2
+            let mut card_counts: Vec<usize> = card_counts_map.into_iter().filter_map(|(k, v)| {
+                // Because we replaced 'J' with '0' for sorting
+                if k != '0' {Some(v)} else {None}
+            }).collect();
+
             card_counts.sort();
             card_counts.reverse();
 
             let card_counts = card_counts;  // Make it immutable now
 
-            let highest_count = card_counts[0];
+            let highest_count = *(card_counts.get(0).unwrap_or(&0)) + j_count;
             let second_count =  if card_counts.len() > 1 {card_counts[1]} else {0};
 
             match (highest_count, second_count) {
@@ -878,7 +888,7 @@ pub mod aoc2023 {
         let mut hands: Vec<Hand> = lines.into_iter().map(|line| {
             let input = line.unwrap()
                 .replace("T", "a")
-                .replace("J", "b")
+                .replace("J", "0")
                 .replace("Q", "c")
                 .replace("K", "d")
                 .replace("A", "e");
