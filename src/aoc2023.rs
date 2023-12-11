@@ -1,10 +1,12 @@
 pub mod aoc2023 {
+    use std::cell::RefCell;
     use std::fs::File;
     use std::io::{BufReader, Lines};
     use regex::Regex;
     use std::collections::{HashMap, HashSet};
     use std::fmt;
     use std::hash::Hash;
+    use std::rc::Rc;
 
     // Day 1
     pub fn day1part1(lines: Lines<BufReader<File>>) {
@@ -906,5 +908,68 @@ pub mod aoc2023 {
         }
 
         println!("{}", sum);
+    }
+
+    // Day 8
+    type TreeNodeRef = Rc<RefCell<Node>>;
+
+    #[derive(Debug)]
+    struct Node {
+        left: String,
+        right: String,
+    }
+
+    pub fn day8part1(mut lines: Lines<BufReader<File>>) {
+        let instruction = lines.next().unwrap().unwrap();
+        let mut nodes: HashMap<String, Node> = HashMap::new();
+        let re = Regex::new(r"\((\w+), (\w+)\)").unwrap();
+
+        for line_result in lines {
+            if let Ok(line) = line_result {
+                if line == "" {
+                    continue
+                }
+                let splits: Vec<_> = line.split(" = ").collect();
+                let name = splits[0].to_owned();
+                let left: String;
+                let right: String;
+
+                if let Some(caps) = re.captures(splits[1]) {
+                    left = caps[1].to_owned();
+                    right = caps[2].to_owned();
+                } else {
+                    panic!("Failed to parse destinations: {}", line)
+                }
+
+                // println!("name={}, left={}, right={}", name, left, right);
+
+                let node = Node{ left, right };
+                nodes.insert(name, node);
+            }
+        }
+
+        // println!("{:?}", nodes);
+
+        let mut current_node: String = "AAA".to_string();
+        let terminal_node: String = "ZZZ".to_string();
+        let mut steps = 0;
+        let instructions: Vec<char> = instruction.chars().collect();
+
+        while current_node != terminal_node {
+            for c in &instructions {
+                match c {
+                    'R' => current_node = nodes.get(&*current_node).unwrap().right.to_owned(),
+                    'L' => current_node = nodes.get(&*current_node).unwrap().left.to_owned(),
+                    _ => panic!("Bad instruction: {}", c)
+                }
+                // println!("{}", current_node);
+                steps += 1;
+                if current_node == terminal_node {
+                    break;
+                }
+            }
+        }
+
+        println!("steps={}", steps);
     }
 }
