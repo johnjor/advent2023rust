@@ -6,8 +6,8 @@ pub mod aoc2023 {
     use std::collections::{HashMap, HashSet};
     use std::fmt;
     use std::hash::Hash;
-    use std::process::exit;
     use std::rc::Rc;
+    use num::integer::lcm;
 
     // Day 1
     pub fn day1part1(lines: Lines<BufReader<File>>) {
@@ -1005,8 +1005,6 @@ pub mod aoc2023 {
 
         let nodes = nodes;
 
-        // println!("{:?}", nodes);
-
         let mut current_nodes: Vec<String> = vec![];
 
         for i in nodes.keys() {
@@ -1015,41 +1013,34 @@ pub mod aoc2023 {
             }
         }
 
-
-        // println!("{:?}", current_nodes);
-
-        // let temp = &nodes.get(current_nodes[0].as_str()).unwrap().left.to_owned();
-        // println!("{}", temp);
-
-        let mut steps = 0;
         let instructions: Vec<char> = instruction.chars().collect();
+        let mut each_steps: Vec<u128> = vec![];
         let n = current_nodes.len();
-        let mut states_visited: HashSet<String> = HashSet::new();
 
-        'outer: loop {
-            for c in &instructions {
-                for i in 0..n {
+        // TODO: calculate the number of steps for each starting spot to reach an end spot independently
+        // And then multiply them together.  For example, if one reaches a Z in 3 steps, and the other in 4 steps,
+        // then they should both be on Z at the same time in 3*4 steps, or 12
+
+
+        for i in 0..n {
+            let mut steps: u128 = 0;
+            'outer: loop {
+                for c in &instructions {
                     match c {
                         'R' => current_nodes[i] = nodes.get(current_nodes[i].as_str()).unwrap().right.to_owned(),
                         'L' => current_nodes[i] = nodes.get(current_nodes[i].as_str()).unwrap().left.to_owned(),
                         _ => panic!("Bad instruction: {}", c)
                     }
+                    steps += 1;
+                    // Check for terminal state
+                    if current_nodes[i].ends_with("Z") {
+                        each_steps.push(steps);
+                        break 'outer;
+                    }
                 }
-                steps += 1;
-                // Check for terminal state
-                if current_nodes.iter().all(|x| { x.ends_with("Z") }) {
-                    break 'outer;
-                }
-                let state = current_nodes.join("");
-                if states_visited.contains(state.as_str()) {
-                    panic!("Circle detected: {:?}", current_nodes);
-                }
-
-                states_visited.insert(state);
-
             }
         }
-
-        println!("{}", steps);
+        let result: u128 = each_steps.into_iter().reduce(|acc, e| { lcm(acc, e) }).unwrap();
+        println!("{}", result);
     }
 }
