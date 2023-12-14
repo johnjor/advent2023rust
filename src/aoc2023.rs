@@ -6,6 +6,7 @@ pub mod aoc2023 {
     use std::collections::{HashMap, HashSet};
     use std::fmt;
     use std::hash::Hash;
+    use std::process::exit;
     use std::rc::Rc;
 
     // Day 1
@@ -971,5 +972,84 @@ pub mod aoc2023 {
         }
 
         println!("steps={}", steps);
+    }
+
+    pub fn day8part2(mut lines: Lines<BufReader<File>>) {
+        let instruction = lines.next().unwrap().unwrap();
+        let mut nodes: HashMap<String, Node> = HashMap::new();
+        let re = Regex::new(r"\((\w+), (\w+)\)").unwrap();
+
+        for line_result in lines {
+            if let Ok(line) = line_result {
+                if line == "" {
+                    continue
+                }
+                let splits: Vec<_> = line.split(" = ").collect();
+                let name = splits[0].to_owned();
+                let left: String;
+                let right: String;
+
+                if let Some(caps) = re.captures(splits[1]) {
+                    left = caps[1].to_owned();
+                    right = caps[2].to_owned();
+                } else {
+                    panic!("Failed to parse destinations: {}", line)
+                }
+
+                // println!("name={}, left={}, right={}", name, left, right);
+
+                let node = Node{ left, right };
+                nodes.insert(name, node);
+            }
+        }
+
+        let nodes = nodes;
+
+        // println!("{:?}", nodes);
+
+        let mut current_nodes: Vec<String> = vec![];
+
+        for i in nodes.keys() {
+            if i.ends_with("A") {
+                current_nodes.push(i.clone());
+            }
+        }
+
+
+        // println!("{:?}", current_nodes);
+
+        // let temp = &nodes.get(current_nodes[0].as_str()).unwrap().left.to_owned();
+        // println!("{}", temp);
+
+        let mut steps = 0;
+        let instructions: Vec<char> = instruction.chars().collect();
+        let n = current_nodes.len();
+        let mut states_visited: HashSet<String> = HashSet::new();
+
+        'outer: loop {
+            for c in &instructions {
+                for i in 0..n {
+                    match c {
+                        'R' => current_nodes[i] = nodes.get(current_nodes[i].as_str()).unwrap().right.to_owned(),
+                        'L' => current_nodes[i] = nodes.get(current_nodes[i].as_str()).unwrap().left.to_owned(),
+                        _ => panic!("Bad instruction: {}", c)
+                    }
+                }
+                steps += 1;
+                // Check for terminal state
+                if current_nodes.iter().all(|x| { x.ends_with("Z") }) {
+                    break 'outer;
+                }
+                let state = current_nodes.join("");
+                if states_visited.contains(state.as_str()) {
+                    panic!("Circle detected: {:?}", current_nodes);
+                }
+
+                states_visited.insert(state);
+
+            }
+        }
+
+        println!("{}", steps);
     }
 }
