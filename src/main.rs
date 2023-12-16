@@ -1,3 +1,4 @@
+mod aoc2022;
 mod aoc2023;
 
 use std::fs::File;
