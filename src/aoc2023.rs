@@ -1057,10 +1057,11 @@ pub mod aoc2023 {
         if differences.iter().all(|x| {*x == 0}) {
             result = 0;
         } else {
-            result = differences[differences.len() - 1] + get_difference(&differences);
+            // result = differences[differences.len() - 1] + get_difference(&differences);
+            result = differences[0] - get_difference(&differences);
         }
 
-        println!("{:?} {}", differences, result);
+        println!("{} {:?}", result, differences);
         result
 
     }
@@ -1076,9 +1077,10 @@ pub mod aoc2023 {
             let numbers: Vec<i64> = line.as_str().split_ascii_whitespace()
                 .map(|x| { x.parse::<i64>().unwrap() }).collect();
 
-            let prediction = numbers[numbers.len()-1] + get_difference(&numbers);
+            // let prediction = numbers[numbers.len()-1] + get_difference(&numbers);
+            let prediction = numbers[0] - get_difference(&numbers);
 
-            println!("{:?} {}\n", numbers, prediction);
+            println!("{} {:?}\n", prediction, numbers);
 
             sum += prediction;
         }
