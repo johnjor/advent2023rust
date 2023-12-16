@@ -1,15 +1,14 @@
-mod aoc2022;
 mod aoc2023;
 
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use aoc2023::aoc2023::*;
+use aoc2023::day9::*;
 
 
 fn main() {
-    if let Ok(lines) = read_lines("inputs/day9/input.txt") {
-        day9part1(lines);
+    if let Ok(lines) = read_lines(INPUT_PATH) {
+        run(lines);
     }
 }
 
