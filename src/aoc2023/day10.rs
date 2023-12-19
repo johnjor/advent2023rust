@@ -3,7 +3,7 @@ use std::io::{BufReader, Lines};
 use std::collections::HashMap;
 use crate::aoc2023::day10::Pipe::{Horizontal, LowerLeft, LowerRight, UpperLeft, UpperRight, Vertical};
 
-pub const INPUT_PATH: &str = "inputs/day10/sample.txt";
+pub const INPUT_PATH: &str = "inputs/day10/input.txt";
 
 pub fn run(lines: Lines<BufReader<File>>) {
     day10part1(lines)
@@ -24,7 +24,7 @@ impl Pipe {
         match c {
             '|' => Ok(Vertical),
             '-' => Ok(Horizontal),
-            'F' => Ok(Horizontal),
+            'F' => Ok(UpperLeft),
             '7' => Ok(UpperRight),
             'L' => Ok(LowerLeft),
             'J' => Ok(LowerRight),
@@ -107,7 +107,9 @@ impl Agent<'_> {
     }
 
     fn find_next_step(&self) -> Result<Point, ()> {
-        let current_pipe = self.map.get(&self.current).unwrap();
+        let Some(current_pipe) = self.map.get(&self.current) else {
+            panic!("current is on an empty space! {:?}", &self)
+        };
         let Some(previous) = self.previous else {
             panic!("Cannot call find_next_step() when previous = None")
         };
@@ -194,11 +196,12 @@ fn day10part1(mut lines: Lines<BufReader<File>>) {
         map: &map
     };
 
-    println!("{:?}", start);
-    println!("{:?}", agent.next().unwrap());
-    println!("{:?}", agent.next().unwrap());
-    println!("{:?}", agent.next().unwrap());
+    loop {
+        let next = agent.next().unwrap();
+        if next == start {
+            break
+        }
+    }
 
-    println!("{}", agent.steps);
-
+    println!("{}", agent.steps / 2);
 }
