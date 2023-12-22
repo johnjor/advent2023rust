@@ -1,15 +1,16 @@
+use std::cmp::max;
 use std::fs::File;
 use std::io::{BufReader, Lines};
 use std::collections::HashMap;
 use crate::aoc2023::day10::Pipe::{Horizontal, LowerLeft, LowerRight, UpperLeft, UpperRight, Vertical};
 
-pub const INPUT_PATH: &str = "inputs/day10/input.txt";
+pub const INPUT_PATH: &str = "inputs/day10/sample.txt";
 
 pub fn run(lines: Lines<BufReader<File>>) {
-    day10part1(lines)
+    day10part2(lines)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum Pipe {
     Vertical,   // |
     Horizontal, // -
@@ -204,4 +205,107 @@ fn day10part1(mut lines: Lines<BufReader<File>>) {
     }
 
     println!("{}", agent.steps / 2);
+}
+
+fn display_map(map: &HashMap<Point, Pipe>, x_len: usize, y_len: usize) {
+    for y in 0..y_len {
+        for x in 0..x_len {
+            let v = match map.get(&Point {x: x as i64, y: y as i64 }) {
+                Some(Vertical) => "|",
+                Some(Horizontal) => "-",
+                Some(UpperLeft) => "F",
+                Some(UpperRight) => "7",
+                Some(LowerLeft) => "L",
+                Some(LowerRight) => "J",
+                None => "."
+            };
+            print!("{}", v);
+        }
+        print!("\n");
+    }
+}
+
+fn resolve_start(map: &HashMap<Point, Pipe>, start: Point) -> Pipe {
+    let offset_up = Point{x: start.x - 1, y: start.y};
+    let offset_down = Point{x: start.x + 1, y: start.y};
+    let offset_left = Point{x: start.x, y: start.y - 1};
+    let offset_right = Point{x: start.x, y: start.y + 1};
+
+    let up = map.get(&offset_up);
+    let down = map.get(&offset_down);
+    let left = map.get(&offset_left);
+    let right = map.get(&offset_right);
+
+    match (up, down, left, right) {
+        (Some(_), Some(_), None, None) => Pipe::Vertical,
+        (None, None, Some(_), Some(_)) => Pipe::Horizontal,
+        (None, Some(_), None, Some(_)) => Pipe::UpperLeft,
+        (None, Some(_), Some(_), None) => Pipe::UpperRight,
+        (Some(_), None, None, Some(_)) => Pipe::LowerLeft,
+        (Some(_), None, Some(_), None) => Pipe::LowerRight,
+        _ => panic!("FOOBAR")
+    }
+}
+
+fn day10part2(mut lines: Lines<BufReader<File>>) {
+    let mut map: HashMap<Point, Pipe> = HashMap::new();
+    let mut start = Point{ x: 0, y: 0 };
+    let mut x_len: usize = 0;
+    let mut y_len: usize = 0;
+
+    for (y, line_result) in lines.enumerate() {
+        let Ok(line) = line_result else {
+            continue
+        };
+
+        x_len = max(x_len, line.len());
+
+        for (x, c) in line.chars().enumerate() {
+            if c == '.' {
+                continue
+            }
+
+            let point = Point { x: x as i64, y: y as i64 };
+
+            if c == 'S' {
+                start = point;
+                continue
+            }
+
+            let Ok(pipe) = Pipe::from(c) else {
+                continue
+            };
+
+            map.insert(point, pipe);
+        }
+        y_len += 1;
+    }  // Finished populating map
+
+    // start no longer mutable
+    let start = start;
+
+    // println!("{:?}", map);
+
+    let mut agent = Agent{
+        start,
+        current: start,
+        previous: None,
+        steps: 0,
+        map: &map
+    };
+
+    let mut fill_map: HashMap<Point, Pipe> = HashMap::new();
+    while let Ok(next) = agent.next() {
+        if next == start {
+            let pipe = resolve_start(&fill_map, start);
+            fill_map.insert(next, pipe.clone());
+            break
+        }
+
+        let pipe = map.get(&next).unwrap();
+        fill_map.insert(next, pipe.clone());
+    }
+
+    // println!("{:?}", fill_map);
+    display_map(&fill_map, x_len, y_len)
 }
