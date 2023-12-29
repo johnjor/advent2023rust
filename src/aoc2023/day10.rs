@@ -4,7 +4,7 @@ use std::io::{BufReader, Lines};
 use std::collections::HashMap;
 use crate::aoc2023::day10::Pipe::{Horizontal, LowerLeft, LowerRight, UpperLeft, UpperRight, Vertical};
 
-pub const INPUT_PATH: &str = "inputs/day10/sample.txt";
+pub const INPUT_PATH: &str = "inputs/day10/input.txt";
 
 pub fn run(lines: Lines<BufReader<File>>) {
     day10part2(lines)
@@ -32,6 +32,14 @@ impl Pipe {
             _ => Err(()),
         }
     }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+enum Direction {
+    North,
+    South,
+    East,
+    West
 }
 
 #[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
@@ -207,6 +215,8 @@ fn day10part1(mut lines: Lines<BufReader<File>>) {
     println!("{}", agent.steps / 2);
 }
 
+// Part 2
+
 fn display_map(map: &HashMap<Point, Pipe>, x_len: usize, y_len: usize) {
     for y in 0..y_len {
         for x in 0..x_len {
@@ -236,15 +246,85 @@ fn resolve_start(map: &HashMap<Point, Pipe>, start: Point) -> Pipe {
     let left = map.get(&offset_left);
     let right = map.get(&offset_right);
 
-    match (up, down, left, right) {
-        (Some(_), Some(_), None, None) => Pipe::Vertical,
-        (None, None, Some(_), Some(_)) => Pipe::Horizontal,
-        (None, Some(_), None, Some(_)) => Pipe::UpperLeft,
-        (None, Some(_), Some(_), None) => Pipe::UpperRight,
-        (Some(_), None, None, Some(_)) => Pipe::LowerLeft,
-        (Some(_), None, Some(_), None) => Pipe::LowerRight,
-        _ => panic!("FOOBAR")
+    if let Some(up) = up {
+        if *up == UpperLeft || *up == Vertical || *up == UpperRight {
+            if let Some(down) = down {
+                if *down == LowerLeft || *down == Vertical || *down == LowerRight {
+                    return Vertical
+                }
+            }
+        }
     }
+
+    todo!()
+}
+
+fn find_fill_start(map: &HashMap<Point, Pipe>, x_len: usize) -> Point {
+    for i in 0..x_len {
+        let point = Point{x: i as i64, y: 0};
+        if let Some(UpperLeft) = map.get(&point) {
+            return point;
+        }
+    }
+    todo!()
+}
+
+#[derive(Debug)]
+struct FillAgent<'a> {
+    start: Point,
+    current: Point,
+    map: &'a HashMap<Point, Pipe>,
+    facing: Direction
+}
+
+impl FillAgent<'_> {
+    fn next() {
+        todo!()
+    }
+
+    fn find_next_step(&self) -> Point {
+        match self.facing {
+            Direction::North => Point{ x: self.current.x, y: self.current.y - 1 },
+            Direction::East => Point{ x: self.current.x + 1, y: self.current.y },
+            Direction::South => Point{ x: self.current.x, y: self.current.y + 1 },
+            Direction::West => Point{ x: self.current.x - 1, y: self.current.y },
+        }
+    }
+
+    fn turn(&mut self) {
+        // match self.facing {
+        //     Direction::North => self.facing = Direction::East,
+        //     Direction::East => self.facing = Direction::South,
+        //     Direction::South => self.facing = Direction::West,
+        //     Direction::West => self.facing = Direction::North,
+        // }
+
+        let current_pipe = self.map.get(&self.current).unwrap();
+
+        // Assumes a clockwise procession
+        match *current_pipe {
+            UpperLeft => self.facing = Direction::East,
+            UpperRight => self.facing = Direction::South,
+            LowerRight => self.facing = Direction::West,
+            LowerLeft => self.facing = Direction::North,
+            _ => {}
+        }
+    }
+
+    fn get_inside_point(&self) -> Point {
+        // Assumes a clockwise procession
+        match self.facing {
+            Direction::North => Point{x: self.current.x + 1, y: self.current.y},
+            Direction::East => Point{x: self.current.x, y: self.current.y + 1},
+            Direction::South =>Point{x: self.current.x - 1, y: self.current.y},
+            Direction::West => Point{x: self.current.x, y: self.current.y - 1},
+        }
+    }
+
+    fn fill(&self) {
+        todo!()
+    }
+
 }
 
 fn day10part2(mut lines: Lines<BufReader<File>>) {
@@ -306,6 +386,9 @@ fn day10part2(mut lines: Lines<BufReader<File>>) {
         fill_map.insert(next, pipe.clone());
     }
 
+    let fill_start = find_fill_start(&fill_map, x_len);
+
     // println!("{:?}", fill_map);
+    // println!("{:?}", fill_start);
     display_map(&fill_map, x_len, y_len)
 }
