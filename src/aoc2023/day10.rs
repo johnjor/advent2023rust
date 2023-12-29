@@ -34,14 +34,6 @@ impl Pipe {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-enum Direction {
-    North,
-    South,
-    East,
-    West
-}
-
 #[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
 struct Point {
     x: i64,
