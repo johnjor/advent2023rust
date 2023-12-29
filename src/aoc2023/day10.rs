@@ -236,10 +236,10 @@ fn display_map(map: &HashMap<Point, Pipe>, x_len: usize, y_len: usize) {
 }
 
 fn resolve_start(map: &HashMap<Point, Pipe>, start: Point) -> Pipe {
-    let offset_up = Point{x: start.x - 1, y: start.y};
-    let offset_down = Point{x: start.x + 1, y: start.y};
-    let offset_left = Point{x: start.x, y: start.y - 1};
-    let offset_right = Point{x: start.x, y: start.y + 1};
+    let offset_up = Point{x: start.x, y: start.y - 1};
+    let offset_down = Point{x: start.x, y: start.y + 1};
+    let offset_left = Point{x: start.x - 1, y: start.y};
+    let offset_right = Point{x: start.x + 1, y: start.y};
 
     let up = map.get(&offset_up);
     let down = map.get(&offset_down);
@@ -256,75 +256,17 @@ fn resolve_start(map: &HashMap<Point, Pipe>, start: Point) -> Pipe {
         }
     }
 
+    if let Some(right) = right {
+        if *right == Horizontal || *right == LowerRight || *right == UpperRight {
+            if let Some(down) = down {
+                if *down == LowerLeft || *down == Vertical || *down == LowerRight {
+                    return UpperLeft
+                }
+            }
+        }
+    }
+
     todo!()
-}
-
-fn find_fill_start(map: &HashMap<Point, Pipe>, x_len: usize) -> Point {
-    for i in 0..x_len {
-        let point = Point{x: i as i64, y: 0};
-        if let Some(UpperLeft) = map.get(&point) {
-            return point;
-        }
-    }
-    todo!()
-}
-
-#[derive(Debug)]
-struct FillAgent<'a> {
-    start: Point,
-    current: Point,
-    map: &'a HashMap<Point, Pipe>,
-    facing: Direction
-}
-
-impl FillAgent<'_> {
-    fn next() {
-        todo!()
-    }
-
-    fn find_next_step(&self) -> Point {
-        match self.facing {
-            Direction::North => Point{ x: self.current.x, y: self.current.y - 1 },
-            Direction::East => Point{ x: self.current.x + 1, y: self.current.y },
-            Direction::South => Point{ x: self.current.x, y: self.current.y + 1 },
-            Direction::West => Point{ x: self.current.x - 1, y: self.current.y },
-        }
-    }
-
-    fn turn(&mut self) {
-        // match self.facing {
-        //     Direction::North => self.facing = Direction::East,
-        //     Direction::East => self.facing = Direction::South,
-        //     Direction::South => self.facing = Direction::West,
-        //     Direction::West => self.facing = Direction::North,
-        // }
-
-        let current_pipe = self.map.get(&self.current).unwrap();
-
-        // Assumes a clockwise procession
-        match *current_pipe {
-            UpperLeft => self.facing = Direction::East,
-            UpperRight => self.facing = Direction::South,
-            LowerRight => self.facing = Direction::West,
-            LowerLeft => self.facing = Direction::North,
-            _ => {}
-        }
-    }
-
-    fn get_inside_point(&self) -> Point {
-        // Assumes a clockwise procession
-        match self.facing {
-            Direction::North => Point{x: self.current.x + 1, y: self.current.y},
-            Direction::East => Point{x: self.current.x, y: self.current.y + 1},
-            Direction::South =>Point{x: self.current.x - 1, y: self.current.y},
-            Direction::West => Point{x: self.current.x, y: self.current.y - 1},
-        }
-    }
-
-    fn fill(&self) {
-        todo!()
-    }
-
 }
 
 fn day10part2(mut lines: Lines<BufReader<File>>) {
@@ -386,9 +328,56 @@ fn day10part2(mut lines: Lines<BufReader<File>>) {
         fill_map.insert(next, pipe.clone());
     }
 
-    let fill_start = find_fill_start(&fill_map, x_len);
-
     // println!("{:?}", fill_map);
-    // println!("{:?}", fill_start);
-    display_map(&fill_map, x_len, y_len)
+    // display_map(&fill_map, x_len, y_len);
+
+    let mut count = 0;
+    let mut inside = false;
+    let mut left_edge: Option<Pipe> = None;
+
+    for y in 0..y_len {
+        for x in 0..x_len {
+            let Some(pipe) = fill_map.get(&Point {x: x as i64, y: y as i64 }) else {
+                if inside {
+                    count += 1;
+                }
+                continue
+            };
+
+            if *pipe == Horizontal {
+                continue
+            }
+
+            if *pipe == Vertical {
+                inside = !inside;
+                continue;
+            }
+
+            if *pipe == UpperLeft || *pipe == LowerLeft {
+                inside = !inside;
+                left_edge = Some(*pipe);
+                continue
+            }
+
+            if *pipe == UpperRight && left_edge == Some(UpperLeft) {
+                inside = !inside;
+                left_edge = None;
+                continue;
+            }
+
+            if *pipe == LowerRight && left_edge == Some(LowerLeft) {
+                inside = !inside;
+
+                left_edge = None;
+                continue;
+            }
+        }
+        inside = false;
+    }
+
+    println!("{}", count);
+
+    // sample  = 1
+    // sample2 = 1
+    // sample3 = 4
 }
