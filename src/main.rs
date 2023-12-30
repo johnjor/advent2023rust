@@ -4,7 +4,7 @@ mod aoc2023;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use aoc2023::day10::*;
+use aoc2023::day11::*;
 
 
 fn main() {
