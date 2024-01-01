@@ -1,7 +1,7 @@
-use std::cmp::max;
 use std::fs::File;
 use std::io::{BufReader, Lines};
 use std::collections::HashSet;
+use std::cmp::{min, max};
 
 pub const INPUT_PATH: &str = "inputs/day11/input.txt";
 
@@ -21,6 +21,24 @@ impl Point {
     }
 }
 
+fn distance(origin: &Point, destination: &Point, x_expansions: &HashSet<i64>, y_expansions: &HashSet<i64>, expansion_factor: i64) -> i64 {
+    let mut x_distance = (destination.x - origin.x).abs();
+    for i in min(origin.x, destination.x)..max(origin.x, destination.x) {
+        if x_expansions.contains(&i) {
+            x_distance += expansion_factor - 1;
+        }
+    }
+
+    let mut y_distance = (destination.y - origin.y).abs();
+    for i in min(origin.y, destination.y)..max(origin.y, destination.y) {
+        if y_expansions.contains(&i) {
+            y_distance += expansion_factor - 1;
+        }
+    }
+
+    x_distance + y_distance
+}
+
 fn display_map(map: &HashSet<Point>, x_len: i64, y_len: i64) {
     for y in 0..y_len {
         for x in 0..x_len {
@@ -36,10 +54,12 @@ fn display_map(map: &HashSet<Point>, x_len: i64, y_len: i64) {
 
 fn day11part1(mut lines: Lines<BufReader<File>>) {
     let mut universe: HashSet<Point> = HashSet::new();
-    let mut expanded_y_universe: HashSet<Point> = HashSet::new();
-    let mut expanded_universe: HashSet<Point> = HashSet::new();
+    let mut x_expansions: HashSet<i64> = HashSet::new();
+    let mut y_expansions: HashSet<i64> = HashSet::new();
     let mut x_len: i64 = 0;
     let mut y_len: i64 = 0;
+    // const EXPANSION_FACTOR: i64 = 2;  // Part 1
+    const EXPANSION_FACTOR: i64 = 1_000_000;  // Part 2
 
     for (y, line_result) in lines.enumerate() {
         let Ok(line) = line_result else {
@@ -59,34 +79,23 @@ fn day11part1(mut lines: Lines<BufReader<File>>) {
         y_len += 1;
     }  // Finished populating map
 
+    for x in 0..x_len {
+        let mut points: Vec<&Point> = universe.iter()
+            .filter(|p| { p.x == x as i64 })
+            .collect();
 
-    let mut y_offset: i64 = 0;
+        if points.len() == 0 {
+            x_expansions.insert(x);
+        }
+    }
+
     for y in 0..y_len {
         let mut points: Vec<&Point> = universe.iter()
             .filter(|p| { p.y == y as i64 })
             .collect();
 
         if points.len() == 0 {
-            y_offset += 1;
-        } else {
-            for p in points {
-                expanded_y_universe.insert(Point{x: p.x, y: p.y + y_offset});
-            }
-        }
-    }
-
-    let mut x_offset: i64 = 0;
-    for x in 0..x_len {
-        let mut points: Vec<&Point> = expanded_y_universe.iter()
-            .filter(|p| { p.x == x as i64 })
-            .collect();
-
-        if points.len() == 0 {
-            x_offset += 1;
-        } else {
-            for p in points {
-                expanded_universe.insert(Point{x: p.x + x_offset, y: p.y});
-            }
+            y_expansions.insert(y);
         }
     }
 
@@ -95,11 +104,13 @@ fn day11part1(mut lines: Lines<BufReader<File>>) {
     // display_map(&expanded_universe, x_len + x_offset, y_len + y_offset);
 
     let mut sum = 0;
-    let galaxies: Vec<Point> = expanded_universe.into_iter().collect();
+    let galaxies: Vec<Point> = universe.into_iter().collect();
     for i in 0..galaxies.len()-1 {
         let origin = &galaxies[i];
         for destination in &galaxies[i+1..] {
-            let distance = origin.distance(destination);
+            let distance = distance(
+                &origin, &destination, &x_expansions, &y_expansions, EXPANSION_FACTOR
+            );
             sum += distance;
             // println!("{:?} {:?}, {}", origin, destination, distance);
         }
