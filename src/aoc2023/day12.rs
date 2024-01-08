@@ -29,24 +29,29 @@ fn process_line(line: String) -> i64 {
     let splits: Vec<&str> = line.split(" ").collect();
     let n = splits[0].len();
     let pattern2 = create_pattern2(splits[0]);
-    // let variable_bit_string = splits[0].replace("?", "1").replace(".", "0").replace("#", "0");
-    // let fixed_bit_string = splits[0].replace("?", "0").replace(".", "0").replace("#", "1");
+    let variable_bit_string = splits[0].replace("?", "1").replace(".", "0").replace("#", "0");
+    let fixed_bit_string = splits[0].replace("?", "0").replace(".", "0").replace("#", "1");
     let numbers: Vec<i64> = splits[1].split(',').map(|x| {
         x.parse::<i64>().unwrap()
     }).collect();
-    // let variable_bits = u32::from_str_radix(&*variable_bit_string, 2).expect("Not a binary string");
-    // let fixed_bits = u32::from_str_radix(&*fixed_bit_string, 2).expect("Not a binary string");
+    let variable_bits = u32::from_str_radix(&*variable_bit_string, 2).expect("Not a binary string");
+    let fixed_bits = u32::from_str_radix(&*fixed_bit_string, 2).expect("Not a binary string");
 
     let pattern = create_pattern(&numbers);
 
     let mut num_of_matches = 0;
     for i in 0..1<<n {
-        let as_string = String::from(format!("{i:0n$b}"));
-        let is_match = pattern.is_match(&*as_string);
-        let is_match2 = pattern2.is_match(&*as_string);
 
-        if is_match && is_match2 {
-            num_of_matches += 1
+        if i & variable_bits > 0 && i & fixed_bits == fixed_bits {
+            let as_string = String::from(format!("{i:0n$b}"));
+            let is_match = pattern.is_match(&*as_string);
+
+            if is_match {
+                let is_match2 = pattern2.is_match(&*as_string);
+                if is_match2 {
+                    num_of_matches += 1
+                }
+            }
         }
 
         // println!("{} {as_string} {is_match} {is_match2}", splits[0]);
